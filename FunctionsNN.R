@@ -7,10 +7,12 @@
 # seed - specified seed to use before random normal draws
 initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
   # [ToDo] Initialize intercepts as zeros
-  
+  b1 <- rep(0, times = hidden_p);   # intercepts after the input layer
+  b2 <- rep(0, times = K);          # intercepts after the hidden layer
   # [ToDo] Initialize weights by drawing them iid from Normal
   # with mean zero and scale as sd
-  
+  W1 <- matrix(rnorm(p * hidden_p, mean = 0, sd = scale), nrow = p, ncol = hidden_p);
+  W2 <- matrix(rnorm(hidden_p * K, mean = 0, sd = scale), nrow = hidden_p, ncol = K);
   # Return
   return(list(b1 = b1, b2 = b2, W1 = W1, W2 = W2))
 }
@@ -25,14 +27,23 @@ loss_grad_scores <- function(y, scores, K){
   
   # [ToDo] Calculate loss when lambda = 0
   # loss = ...
+  N <- nrow(scores)                   # num of the sample
+  exp_mat <- exp(scores)
+  pk <- exp_mat / rowSums(exp_mat)    # muti-sigmoid functions
+  pos_ind <- cbind(1:N, (y+1))        # position of indicator function to be one
+  loss <- - mean(log(pk[pos_ind]))    # loss when lambda is zero
   
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
   # error = ...
+  error <- sum(max.col(pk) != (y+1)) / N * 100
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
   # grad = ...
+  pk_adj <- pk
+  pk_adj[pos_ind] <- pk[pos_ind] - 1  # adjust p_k to p_k-indicator function
+  grad <- pk_adj / N                  # gradient vector as columns of the matrix
   
   # Return loss, gradient and misclassification error on training (in %)
   return(list(loss = loss, grad = grad, error = error))
