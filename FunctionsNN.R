@@ -27,23 +27,23 @@ loss_grad_scores <- function(y, scores, K){
   
   # [ToDo] Calculate loss when lambda = 0
   # loss = ...
-  N <- nrow(scores)                   # num of the sample
-  exp_mat <- exp(scores)
-  pk <- exp_mat / rowSums(exp_mat)    # muti-sigmoid functions
-  pos_ind <- cbind(1:N, (y+1))        # position of indicator function to be one
-  loss <- - mean(log(pk[pos_ind]))    # loss when lambda is zero
+  N <- nrow(scores);                   # num of the sample
+  exp_mat <- exp(scores);
+  pk <- exp_mat / rowSums(exp_mat);    # muti-sigmoid functions
+  pos_ind <- cbind(1:N, (y+1));        # position of indicator function to be one
+  loss <- - mean(log(pk[pos_ind]));    # loss when lambda is zero
   
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
   # error = ...
-  error <- sum(max.col(pk) != (y+1)) / N * 100
+  error <- sum(max.col(pk) != (y+1)) / N * 100;
   
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
   # grad = ...
-  pk_adj <- pk
-  pk_adj[pos_ind] <- pk[pos_ind] - 1  # adjust p_k to p_k-indicator function
-  grad <- pk_adj / N                  # gradient vector as columns of the matrix
+  pk_adj <- pk;
+  pk_adj[pos_ind] <- pk[pos_ind] - 1;  # adjust p_k to p_k-indicator function
+  grad <- pk_adj / N;                  # gradient vector as columns of the matrix
   
   # Return loss, gradient and misclassification error on training (in %)
   return(list(loss = loss, grad = grad, error = error))
@@ -61,20 +61,28 @@ loss_grad_scores <- function(y, scores, K){
 one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
 
   # [To Do] Forward pass
+  N <- nrow(X);              # the number of samples
+  N_ones <- matrix(1, N, 1)  # column all one vector
   # From input to hidden 
-  
+  hd <- X %*% W1 + N_ones %*% b1;
   # ReLU
-  
+  relu_hd <- matrix(pmax(0, hd), nrow = N, ncol = length(b1));
   # From hidden to output scores
- 
+  output <- relu_hd %*% W2 + N_ones %*% b2;
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-
+  out <- loss_grad_scores(y, output, K);
+  
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  
+  db2 <- colSums(out$grad);           # sum of \partial f / \partial o
+  dW2 <- t(relu_hd) %*% out$grad;
+
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  
+  dhd <- out$grad %*% t(W2) * matrix(as.integer(hd > 0), N, ncol = length(b1)) # grad for hidden
+  db1 <- colSums(dhd);
+  dW1 <- t(X) %*% dhd;
+
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(loss = out$loss, error = out$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
