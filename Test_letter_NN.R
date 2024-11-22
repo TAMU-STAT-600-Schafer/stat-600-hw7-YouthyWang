@@ -29,7 +29,7 @@ Xinter <- cbind(rep(1, nrow(Xtrain)), Xtrain)
 Xtinter <- cbind(rep(1, nrow(Xt)), Xt)
 
 #  Apply LR (note that here lambda is not on the same scale as in NN due to scaling by training size)
-out <- LRMultiClassIrina(Xinter, Ytrain, Xtinter, Yt, lambda = 1, numIter = 150, eta = 0.1)
+out <- LRMultiClass(Xinter, Ytrain, Xtinter, Yt, lambda = 1, numIter = 150, eta = 0.1)
 plot(out$objective, type = 'o')
 plot(out$error_train, type = 'o') # around 19.5 if keep training
 plot(out$error_test, type = 'o') # around 25 if keep training
@@ -46,5 +46,18 @@ lines(1:length(out2$error_val), out2$error_val, col = "red")
 test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
 test_error # 16.1
 
+# microbenchmark::microbenchmark(
+#   NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.001,
+#                   rate = 0.1, mbatch = 50, nEpoch = 150,
+#                   hidden_p = 100, scale = 1e-3, seed = 12345),
+#   times = 5L
+# )
+# 
+# profvis::profvis(
+#   NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.001,
+#                   rate = 0.1, mbatch = 50, nEpoch = 150,
+#                   hidden_p = 100, scale = 1e-3, seed = 12345)
+# )
 # [ToDo] Try changing the parameters above to obtain a better performance,
 # this will likely take several trials
+
