@@ -55,7 +55,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   exp_mat <- exp(X %*% beta_init)
   pk <- exp_mat / rowSums(exp_mat)    # muti-sigmoid functions
   pos_ind <- cbind(1:N, (y+1))        # position of indicator function to be one
-  objective[1] <- -mean(log(pk[pos_ind])) + 0.5*lambda*norm(beta_init, type="F")^2
+  objective[1] <- -sum(log(pk[pos_ind])) + 0.5*lambda*norm(beta_init, type="F")^2
   error_train[1] <- sum(max.col(pk) != (y+1)) / N * 100
   error_test[1] <- sum(max.col(Xt %*% beta_init) != (yt+1)) / Nt * 100
   beta <- beta_init
@@ -67,10 +67,10 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
     ## Update step
     pk_adj <- pk
     pk_adj[pos_ind] <- pk_adj[pos_ind] - 1   # adjust p_k to p_k-indicator function
-    grad <- t(X) %*% pk_adj / N + lambda*beta    # gradient vector as columns of the matrix
+    grad <- t(X) %*% pk_adj + lambda*beta    # gradient vector as columns of the matrix
     for (i in seq_len(K)) {
       diag_vec <- pk[ ,i] - pk[ ,i]^2
-      hessian <- lambda * diag(p) + t(X) %*% (X * diag_vec) / N
+      hessian <- lambda * diag(p) + t(X) %*% (X * diag_vec)
       beta[ ,i] <- beta[ ,i] - eta * solve(hessian) %*% grad[ ,i]
     }
     
@@ -78,7 +78,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
     pk <- exp_mat / rowSums(exp_mat)         # n x K matrix with each row as pk
     
     ## Report step
-    objective[iter+1] <- -mean(log(pk[pos_ind])) + 0.5*lambda*norm(beta, type="F")^2
+    objective[iter+1] <- -sum(log(pk[pos_ind])) + 0.5*lambda*norm(beta, type="F")^2
     error_train[iter+1] <- sum(max.col(pk) != (y+1)) / N * 100
     error_test[iter+1] <- sum(max.col(Xt %*% beta) != (yt+1)) / Nt * 100
   }
