@@ -61,3 +61,9 @@ test_error # 16.1
 # [ToDo] Try changing the parameters above to obtain a better performance,
 # this will likely take several trials
 
+out3 <- NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 5e-4,
+                rate = 5e-2, mbatch = 30, nEpoch = 150,
+                hidden_p = 300, scale = 1e-3, seed = 12345)
+
+test_error3 <- evaluate_error(Xt, Yt, out3$params$W1, out3$params$b1, out3$params$W2, out3$params$b2)
+test_error3 # 14.6 (complex model with more hidden layers and less restrictions on sparsity)
